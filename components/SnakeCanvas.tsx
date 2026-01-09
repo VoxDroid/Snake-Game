@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GameState, Point, Direction } from '../types';
 import { CELL_SIZE, GRID_SIZE } from '../constants';
 
@@ -8,6 +8,34 @@ interface SnakeCanvasProps {
 
 const SnakeCanvas: React.FC<SnakeCanvasProps> = ({ gameState }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const headImage = useRef<HTMLImageElement | null>(null);
+  const bodyImage = useRef<HTMLImageElement | null>(null);
+  const tailImage = useRef<HTMLImageElement | null>(null);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+
+  useEffect(() => {
+    const head = new Image();
+    const body = new Image();
+    const tail = new Image();
+
+    let loadedCount = 0;
+    const checkLoaded = () => {
+      loadedCount++;
+      if (loadedCount === 3) setAssetsLoaded(true);
+    };
+
+    head.src = '/assets/snake-head.svg';
+    body.src = '/assets/snake-body.svg';
+    tail.src = '/assets/snake-tail.svg';
+
+    head.onload = checkLoaded;
+    body.onload = checkLoaded;
+    tail.onload = checkLoaded;
+
+    headImage.current = head;
+    bodyImage.current = body;
+    tailImage.current = tail;
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -18,8 +46,27 @@ const SnakeCanvas: React.FC<SnakeCanvasProps> = ({ gameState }) => {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Grid (Optional, subtle)
-    ctx.strokeStyle = '#1e293b';
+    // Draw Board Background
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Pixelated Board Pattern (Shaders/Texture)
+    for (let x = 0; x < GRID_SIZE; x++) {
+      for (let y = 0; y < GRID_SIZE; y++) {
+        // Subtle checkerboard/noise pattern for pixel art feel
+        if ((x + y) % 2 === 0) {
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        }
+        // Corner "pixel" highlights for individual tiles
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, 4, 4);
+        ctx.fillRect(x * CELL_SIZE + CELL_SIZE - 4, y * CELL_SIZE + CELL_SIZE - 4, 4, 4);
+      }
+    }
+
+    // Draw Grid Overlay (Subtle)
+    ctx.strokeStyle = 'rgba(30, 41, 59, 0.5)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= GRID_SIZE; i++) {
       ctx.beginPath();
@@ -32,61 +79,82 @@ const SnakeCanvas: React.FC<SnakeCanvasProps> = ({ gameState }) => {
       ctx.stroke();
     }
 
-    // Draw Food
+    // Draw Food (Pixelated Glow)
     const { food } = gameState;
-    ctx.fillStyle = '#ef4444'; // Red-500
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = '#ef4444';
-    ctx.beginPath();
-    ctx.arc(
-      food.x * CELL_SIZE + CELL_SIZE / 2,
-      food.y * CELL_SIZE + CELL_SIZE / 2,
-      CELL_SIZE / 2 - 2,
-      0,
-      Math.PI * 2
+    ctx.fillStyle = '#f43f5e';
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#f43f5e';
+    // Draw a square-ish pixelated apple
+    ctx.fillRect(
+      food.x * CELL_SIZE + CELL_SIZE / 4,
+      food.y * CELL_SIZE + CELL_SIZE / 4,
+      CELL_SIZE / 2,
+      CELL_SIZE / 2
     );
-    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(
+      food.x * CELL_SIZE + CELL_SIZE / 4 + 2,
+      food.y * CELL_SIZE + CELL_SIZE / 4 + 2,
+      4,
+      4
+    );
     ctx.shadowBlur = 0;
 
     // Draw Snake
     const { snake } = gameState;
     snake.forEach((segment, index) => {
       const isHead = index === 0;
-      ctx.fillStyle = isHead ? '#22d3ee' : '#0ea5e9'; // Cyan-400 head, Sky-500 body
+      const isTail = index === snake.length - 1 && snake.length > 1;
+      const x = segment.x * CELL_SIZE;
+      const y = segment.y * CELL_SIZE;
 
-      if (isHead) {
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#22d3ee';
+      if (assetsLoaded && headImage.current && bodyImage.current && tailImage.current) {
+        ctx.save();
+        ctx.translate(x + CELL_SIZE / 2, y + CELL_SIZE / 2);
+
+        let img = bodyImage.current;
+        let angle = 0;
+
+        if (isHead) {
+          img = headImage.current;
+          if (gameState.direction === Direction.UP) angle = -Math.PI / 2;
+          if (gameState.direction === Direction.DOWN) angle = Math.PI / 2;
+          if (gameState.direction === Direction.LEFT) angle = Math.PI;
+          if (gameState.direction === Direction.RIGHT) angle = 0;
+        } else if (isTail) {
+          img = tailImage.current;
+          const prev = snake[index - 1];
+          // Tail points AWAY from the segment before it
+          if (segment.x < prev.x) angle = Math.PI;
+          if (segment.x > prev.x) angle = 0;
+          if (segment.y < prev.y) angle = -Math.PI / 2;
+          if (segment.y > prev.y) angle = Math.PI / 2;
+        } else {
+          // Body segments also rotate to match the flow
+          const next = snake[index - 1]; // Segment closer to head
+          if (segment.x < next.x) angle = 0;    // Moving right
+          if (segment.x > next.x) angle = Math.PI; // Moving left
+          if (segment.y < next.y) angle = Math.PI / 2; // Moving down
+          if (segment.y > next.y) angle = -Math.PI / 2; // Moving up
+        }
+
+        ctx.rotate(angle);
+        ctx.drawImage(img, -CELL_SIZE / 2, -CELL_SIZE / 2, CELL_SIZE, CELL_SIZE);
+        ctx.restore();
       } else {
-        ctx.shadowBlur = 0;
-      }
-
-      // Slightly smaller than cell for grid effect
-      const x = segment.x * CELL_SIZE + 1;
-      const y = segment.y * CELL_SIZE + 1;
-      const size = CELL_SIZE - 2;
-
-      ctx.fillRect(x, y, size, size);
-
-      // Draw eyes if head
-      if (isHead) {
-        ctx.fillStyle = '#000';
-        const eyeSize = 3;
-        // Simple eyes based on current direction could be added here, 
-        // but simple center dots work for top-down abstract view
-        ctx.fillRect(x + 5, y + 5, eyeSize, eyeSize);
-        ctx.fillRect(x + size - 5 - eyeSize, y + 5, eyeSize, eyeSize);
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillRect(x + 2, y + 2, CELL_SIZE - 4, CELL_SIZE - 4);
       }
     });
 
-  }, [gameState]);
+  }, [gameState, assetsLoaded]);
 
   return (
     <canvas
       ref={canvasRef}
       width={GRID_SIZE * CELL_SIZE}
       height={GRID_SIZE * CELL_SIZE}
-      className="bg-slate-900 rounded-lg shadow-2xl border border-slate-700"
+      className="bg-slate-900 rounded-xl shadow-[0_0_50px_-12px_rgba(6,182,212,0.5)] border-2 border-slate-800"
     />
   );
 };

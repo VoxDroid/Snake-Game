@@ -1,0 +1,29 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+  <!-- Pixelated Snake Head (16x16 logical pixels scaled to 32x32) -->
+  <!-- Base Color: #00d4ff (Cyan) -->
+  <!-- Shadow: #0080ff (Blue) -->
+  <!-- Highlight: #b0fbff (Light Cyan) -->
+  
+  <!-- Outer Shape -->
+  <rect x="4" y="4" width="24" height="24" fill="#0080ff" />
+  <rect x="6" y="6" width="20" height="20" fill="#00d4ff" />
+  
+  <!-- Highlights (Shaders) -->
+  <rect x="6" y="6" width="16" height="2" fill="#b0fbff" opacity="0.8" />
+  <rect x="6" y="8" width="2" height="14" fill="#b0fbff" opacity="0.8" />
+  
+  <!-- Darker bottom/right for depth -->
+  <rect x="6" y="24" width="20" height="2" fill="#004a80" />
+  <rect x="24" y="6" width="2" height="18" fill="#004a80" />
+
+  <!-- Eyes (Pixelated) -->
+  <rect x="18" y="8" width="4" height="4" fill="#000000" />
+  <rect x="18" y="20" width="4" height="4" fill="#000000" />
+  <rect x="20" y="9" width="2" height="2" fill="#ffffff" />
+  <rect x="20" y="21" width="2" height="2" fill="#ffffff" />
+
+  <!-- Center Diamond Pattern -->
+  <rect x="10" y="14" width="4" height="4" fill="#ffffff" opacity="0.6" />
+  <rect x="12" y="12" width="4" height="8" fill="#ffffff" opacity="0.3" />
+  <rect x="8" y="14" width="8" height="4" fill="#ffffff" opacity="0.3" />
+</svg>

@@ -137,12 +137,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
-      <div className="mb-6 text-center">
-        <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2">
-          Snake Game
-        </h1>
-      </div>
-
       <div className="relative">
         <SnakeCanvas gameState={gameState} />
 
