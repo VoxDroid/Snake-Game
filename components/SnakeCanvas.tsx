@@ -53,7 +53,7 @@ const SnakeCanvas: React.FC<SnakeCanvasProps> = ({ gameState }) => {
     snake.forEach((segment, index) => {
       const isHead = index === 0;
       ctx.fillStyle = isHead ? '#22d3ee' : '#0ea5e9'; // Cyan-400 head, Sky-500 body
-      
+
       if (isHead) {
         ctx.shadowBlur = 10;
         ctx.shadowColor = '#22d3ee';
@@ -65,7 +65,7 @@ const SnakeCanvas: React.FC<SnakeCanvasProps> = ({ gameState }) => {
       const x = segment.x * CELL_SIZE + 1;
       const y = segment.y * CELL_SIZE + 1;
       const size = CELL_SIZE - 2;
-      
+
       ctx.fillRect(x, y, size, size);
 
       // Draw eyes if head

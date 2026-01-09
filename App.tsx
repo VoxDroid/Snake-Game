@@ -76,11 +76,11 @@ const App: React.FC = () => {
       newScore += 1;
       const spawned = spawnFood(newSnake);
       if (spawned.x === -1) {
-         // Victory / Game Complete logic could go here, for now just no food
-         // setGameState(victory...)
-         console.log("Victory!");
+        // Victory / Game Complete logic could go here, for now just no food
+        // setGameState(victory...)
+        console.log("Victory!");
       } else {
-         newFood = spawned;
+        newFood = spawned;
       }
     } else {
       newSnake.pop(); // Remove tail
@@ -103,7 +103,7 @@ const App: React.FC = () => {
       updateGame();
       lastTimeRef.current = time;
     }
-    
+
     if (gameStateRef.current.gameOver || !isPlaying) return;
     requestRef.current = requestAnimationFrame(animate);
   }, [speed, isPlaying, updateGame]);
@@ -145,52 +145,52 @@ const App: React.FC = () => {
 
       <div className="relative">
         <SnakeCanvas gameState={gameState} />
-        
+
         {(!isPlaying || gameState.gameOver) && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg z-10">
             {gameState.gameOver ? (
-               <div className="text-center animate-in fade-in zoom-in duration-300">
-                 <h2 className="text-4xl font-bold text-red-500 mb-2">GAME OVER</h2>
-                 <p className="text-white mb-6">Score: {gameState.score}</p>
-                 <button 
-                   onClick={resetGame}
-                   className="px-6 py-3 bg-white text-slate-900 font-bold rounded-full hover:scale-105 transition-transform"
-                 >
-                   Restart
-                 </button>
-               </div>
-            ) : (
-                <button 
-                  onClick={() => setIsPlaying(true)}
-                  className="px-8 py-4 bg-cyan-500 text-white font-bold rounded-full hover:bg-cyan-400 shadow-lg shadow-cyan-500/30 transition-all hover:scale-110"
+              <div className="text-center animate-in fade-in zoom-in duration-300">
+                <h2 className="text-4xl font-bold text-red-500 mb-2">GAME OVER</h2>
+                <p className="text-white mb-6">Score: {gameState.score}</p>
+                <button
+                  onClick={resetGame}
+                  className="px-6 py-3 bg-white text-slate-900 font-bold rounded-full hover:scale-105 transition-transform"
                 >
-                  Start
+                  Restart
                 </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsPlaying(true)}
+                className="px-8 py-4 bg-cyan-500 text-white font-bold rounded-full hover:bg-cyan-400 shadow-lg shadow-cyan-500/30 transition-all hover:scale-110"
+              >
+                Start
+              </button>
             )}
           </div>
         )}
       </div>
 
-      <InfoPanel 
-        score={gameState.score} 
-        highScore={highScore} 
+      <InfoPanel
+        score={gameState.score}
+        highScore={highScore}
       />
 
       <div className="mt-8 flex flex-wrap gap-4 justify-center items-center">
         <div className="flex items-center gap-3 bg-slate-900 p-2 rounded-lg border border-slate-800">
           <span className="text-xs font-bold text-slate-400 px-2">SPEED</span>
-          <input 
-            type="range" 
-            min="10" 
-            max="100" 
+          <input
+            type="range"
+            min="10"
+            max="100"
             step="10"
-            value={110 - speed} 
+            value={110 - speed}
             onChange={(e) => setSpeed(110 - parseInt(e.target.value))}
             className="w-32 accent-cyan-500 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
           />
         </div>
-        
-        <button 
+
+        <button
           onClick={togglePause}
           disabled={gameState.gameOver}
           className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 font-medium transition-colors text-sm"
