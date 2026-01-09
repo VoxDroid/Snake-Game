@@ -39,5 +39,5 @@ const food3: Point = {x:6,y:5}; // border-ish
 console.log('Scenario 3 move:', dirToStr(getBestMove(snake3, food3)));
 
 // Show spawned food doesn't pick an occupied tile
-const spawned = spawnFood(snake1);
+const spawned = spawnFood(snake1, []);
 console.log('Spawned food:', spawned);

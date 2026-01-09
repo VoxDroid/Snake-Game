@@ -100,6 +100,18 @@ const SnakeCanvas: React.FC<SnakeCanvasProps> = ({ gameState }) => {
     );
     ctx.shadowBlur = 0;
 
+    // Draw Obstacles (if any)
+    const obstacles = gameState.obstacles || [];
+    if (obstacles.length > 0) {
+      ctx.fillStyle = '#7f1d1d';
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = '#7f1d1d';
+      obstacles.forEach(o => {
+        ctx.fillRect(o.x * CELL_SIZE + 2, o.y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
+      });
+      ctx.shadowBlur = 0;
+    }
+
     // Draw Snake
     const { snake } = gameState;
     snake.forEach((segment, index) => {

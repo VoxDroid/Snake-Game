@@ -17,6 +17,8 @@ export interface GameState {
   gameOver: boolean;
   gridSize: number;
   direction: Direction;
+  // External obstacles (spawned by events like TikTok gifts)
+  obstacles?: Point[];
 }
 
 export interface AiCommentary {

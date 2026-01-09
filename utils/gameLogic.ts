@@ -80,7 +80,7 @@ const createObstacleSet = (points: Point[]): Set<string> => {
     return new Set(points.map(p => `${p.x},${p.y}`));
 };
 
-export const getBestMove = (snake: Point[], food: Point): Direction | null => {
+export const getBestMove = (snake: Point[], food: Point, extraObstacles: Point[] = []): Direction | null => {
   const head = snake[0];
   const neighbors = [
     { x: head.x, y: head.y - 1, dir: Direction.UP },
@@ -91,7 +91,7 @@ export const getBestMove = (snake: Point[], food: Point): Direction | null => {
 
   // For initial valid move check, we assume we MIGHT NOT eat.
   // If we don't eat, tail moves. So we exclude tail from obstacles.
-  const currentBodyObstacles = createObstacleSet(snake.slice(0, -1)); 
+  const currentBodyObstacles = createObstacleSet([...snake.slice(0, -1), ...extraObstacles]); 
   
   const validNeighbors = neighbors.filter(n => {
       const inBounds = n.x >= 0 && n.x < GRID_SIZE && n.y >= 0 && n.y < GRID_SIZE;
@@ -108,12 +108,12 @@ export const getBestMove = (snake: Point[], food: Point): Direction | null => {
       
       // Treat the snake as static for pathfinding but allow the tail to be traversed
       // because the tail will move while we're heading toward the food.
-      const staticSnakeObstacles = createObstacleSet(snake.slice(0, -1)); // exclude tail
+      const staticSnakeObstacles = createObstacleSet([...snake.slice(0, -1), ...extraObstacles]); // exclude tail
       const pathToFood = bfs(startNode, food, staticSnakeObstacles);
       
       if (pathToFood) {
           // Validate Safety: Can we reach tail after eating?
-          const futureBodySet = createObstacleSet(snake);
+          const futureBodySet = createObstacleSet([...snake, ...extraObstacles]);
           pathToFood.forEach(p => futureBodySet.add(`${p.x},${p.y}`));
           
           futureBodySet.delete(`${food.x},${food.y}`); // New Head
@@ -139,7 +139,7 @@ export const getBestMove = (snake: Point[], food: Point): Direction | null => {
       const moveDir = n.dir;
       const startNode = { x: n.x, y: n.y };
       const chaseTarget = snake[snake.length - 1]; // We chase the tail segment
-      const stallObstacles = createObstacleSet(snake.slice(0, -1)); // Tail is moving, so it's a target, not obstacle
+      const stallObstacles = createObstacleSet([...snake.slice(0, -1), ...extraObstacles]); // Tail is moving, so it's a target, not obstacle
       
       const pathToTail = bfs(startNode, chaseTarget, stallObstacles);
       
@@ -159,7 +159,7 @@ export const getBestMove = (snake: Point[], food: Point): Direction | null => {
   let bestAreaMove: { dir: Direction; area: number } | null = null;
   
   for (const n of validNeighbors) {
-      const obstacles = createObstacleSet(snake.slice(0, -1));
+      const obstacles = createObstacleSet([...snake.slice(0, -1), ...extraObstacles]);
       const area = getAccessibleArea({x: n.x, y: n.y}, obstacles, snake.length * 2);
       
       if (!bestAreaMove || area > bestAreaMove.area) {
@@ -175,11 +175,15 @@ export const getBestMove = (snake: Point[], food: Point): Direction | null => {
   return null;
 };
 
-export const checkCollision = (head: Point, snake: Point[], isGrowing: boolean = false): boolean => {
+export const checkCollision = (head: Point, snake: Point[], isGrowing: boolean = false, extraObstacles: Point[] = []): boolean => {
   // Wall collision
   if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
     return true;
   }
+
+  // External obstacle collision
+  const extraSet = createObstacleSet(extraObstacles);
+  if (extraSet.has(`${head.x},${head.y}`)) return true;
   
   // Body collision
   // If we are growing (just ate), the tail does NOT move, so we must check against the full snake.
@@ -194,8 +198,9 @@ export const checkCollision = (head: Point, snake: Point[], isGrowing: boolean =
   return false;
 };
 
-export const spawnFood = (snake: Point[]): Point => {
-  const obstacleSet = createObstacleSet(snake);
+export const spawnFood = (snake: Point[], extraObstacles: Point[] = []): Point => {
+  const combined = [...snake, ...extraObstacles];
+  const obstacleSet = createObstacleSet(combined);
   let food: Point;
   
   // Try random first for performance
