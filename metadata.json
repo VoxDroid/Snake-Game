@@ -1,0 +1,5 @@
+{
+  "name": "Snake Game",
+  "description": "A classic Snake game with an advanced auto-pilot mode.",
+  "requestFramePermissions": []
+}
